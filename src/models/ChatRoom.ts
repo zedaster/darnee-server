@@ -9,9 +9,9 @@ export interface IChatRoom {
     createdAt: Date,
 }
 
-type IChatRoomPopulated = Omit<IChatRoom, "messages" | "users"> & {
-    messages: Types.Array<IMessage>,
-    users: Types.Array<ILocalUser>,
+export type IChatRoomPopulated = Omit<IChatRoom, "messages" | "users"> & {
+    messages: Types.Array<IMessage> | null,
+    users: Types.Array<ILocalUser> | null,
 }
 
 const ChatRoom = new Schema({

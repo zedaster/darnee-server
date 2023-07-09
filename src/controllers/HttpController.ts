@@ -5,16 +5,9 @@ import {validationResult} from "express-validator";
 import {Types} from "mongoose";
 import jwt, {JwtPayload} from "jsonwebtoken";
 import AuthRefreshToken from "../models/AuthRefreshToken";
+import AuthorizationService from "../services/AuthorizationService";
 
 export class HttpController {
-    // bind methods to this class
-    constructor() {
-        this.createRoom = this.createRoom.bind(this);
-        this.restoreRooms = this.restoreRooms.bind(this);
-        this.joinRooms = this.joinRooms.bind(this);
-        this.updateToken = this.updateToken.bind(this);
-    }
-
     async createRoom(request: Request, response: Response) {
         try {
             const {username, email} = request.body
@@ -29,7 +22,7 @@ export class HttpController {
             const chatRoom = new ChatRoom({users: [localUser._id]})
             await chatRoom.save()
 
-            const authTokens = await this.getAuthTokens(localUser._id, chatRoom._id);
+            const authTokens = await AuthorizationService.createAuthTokens(localUser._id, chatRoom._id);
             response.status(200).json({message: "Room created", data: authTokens});
         } catch (e) {
             console.log(e);
@@ -78,6 +71,7 @@ export class HttpController {
             const payloadChatId = new Types.ObjectId(payload.chat);
 
             if (!refreshTokenModel.localUser.equals(payloadUserId) || !refreshTokenModel.chatRoom.equals(payloadChatId)) {
+                console.log('The local user or the chat room from token payload not the same as it\'s in DB')
                 return response.status(400).json({message: "Update token error"});
             }
 
@@ -90,28 +84,11 @@ export class HttpController {
                 return response.status(400).json({message: "The user or the chat does not exist"});
             }
 
-            const authTokens = await this.getAuthTokens(payload.user, payload.chat);
+            const authTokens = await AuthorizationService.createAuthTokens(payload.user, payload.chat);
             response.status(200).json({message: "Token updated", data: authTokens});
         } catch (e) {
             console.log(e);
             response.status(400).json({message: "Update token error"});
-        }
-    }
-
-
-    private async getAuthTokens(localUserId: Types.ObjectId, chatId: Types.ObjectId) {
-        const payload = {user: localUserId, chat: chatId};
-        const jwtToken = jwt.sign(payload, process.env.TOKEN_AUTH_SECRET!, {expiresIn: '10min'});
-
-        const refreshTokenModel = new AuthRefreshToken({localUser: localUserId, chatRoom: chatId});
-        await refreshTokenModel.save();
-        const refreshPayload = {...payload, id: refreshTokenModel._id};
-        const secret = process.env.REFRESH_TOKEN_AUTH_SECRET! + refreshTokenModel.salt;
-        const refreshToken = jwt.sign(refreshPayload, secret, {expiresIn: '30d'});
-
-        return {
-            token: jwtToken,
-            refreshToken: refreshToken
         }
     }
 }

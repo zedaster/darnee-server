@@ -1,7 +1,12 @@
 import express, {Express} from "express";
 import dotenv from "dotenv"
-import chatRoutes from "./routes/chatRoutes";
+import authRoutes from "./routes/authRoutes";
 import mongoose from "mongoose";
+import {Server} from "socket.io";
+import {ChatSocketController} from "./controllers/ChatSocketController";
+import * as http from "http";
+import cors from "cors";
+import {authorizeChatUsers} from "./middleware/authMiddleware";
 
 dotenv.config();
 
@@ -27,9 +32,12 @@ async function connectMongoose(params: { removeAll: boolean }) {
 
 function setupServers() {
     const app: Express = express();
-    // app.use(cors());
+    app.use(cors({
+        origin: '*',
+        methods: ['GET', 'POST']
+    }));
     app.use(express.json());
-    app.use('/chat', chatRoutes);
+    app.use('/auth', authRoutes);
 
     // const server = http.createServer(app);
     let port = 5000;
@@ -38,18 +46,19 @@ function setupServers() {
     } else {
         console.log('SERVER_PORT not specified, using default 5000');
     }
+    const server = http.createServer(app)
 
-    // const io = new Server(server, {
-    //     cors: {
-    //         origin: '*',
-    //         methods: ['GET', 'POST']
-    //     },
-    //     path: '/chat/socket'
-    // });
-    // const chatSocketController = new ChatSocketController();
-    // chatSocketController.setupServer(io);
+    const io = new Server(server, {
+        path: '/chat/',
+        cors: {
+            origin: '*',
+            methods: ['GET', 'POST']
+        }
+    });
+    io.use(authorizeChatUsers)
+    new ChatSocketController(io)
 
-    app.listen(port, () => {
+    server.listen(port, () => {
         console.log(`Server listening on port ${port}`);
     });
 }
