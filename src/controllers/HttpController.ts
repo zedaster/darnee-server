@@ -6,6 +6,7 @@ import {Types} from "mongoose";
 import jwt, {JwtPayload} from "jsonwebtoken";
 import AuthRefreshToken from "../models/AuthRefreshToken";
 import AuthorizationService from "../services/AuthorizationService";
+import {InviteLinkRequest} from "../middleware/inviteLinkMiddleware";
 
 export class HttpController {
     async createRoom(request: Request, response: Response) {
@@ -39,9 +40,26 @@ export class HttpController {
         }
     }
 
-    async joinRooms(request: Request, response: Response) {
+    async hasInviteHash(request: Request, response: Response) {
         try {
+            response.status(200).json({message: "Invite hash found"});
+        } catch (e) {
+            console.log(e);
+        }
+    }
 
+    async joinRoom(request: Request, response: Response) {
+        try {
+            const {username, email} = request.body
+            const inviteRequest = request as InviteLinkRequest;
+            const {chatRoom} = inviteRequest;
+
+            const localUser = new LocalUser({name: username})
+            await localUser.save()
+            chatRoom.users.push(localUser._id)
+            await chatRoom.save()
+            const authTokens = await AuthorizationService.createAuthTokens(localUser._id, chatRoom._id);
+            response.status(200).json({message: "User joined", data: authTokens});
         } catch (e) {
             console.log(e);
             response.status(400).json({message: "Join room error"});

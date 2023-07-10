@@ -2,6 +2,7 @@ import {Server, Socket} from "socket.io";
 import Message, {IMessage, isClientMessage} from "../models/Message";
 import ChatRoom, {IChatRoomPopulated} from "../models/ChatRoom";
 import LocalUser from "../models/LocalUser";
+import InviteLink from "../models/InviteLink";
 
 export class ChatSocketController {
     private io: Server;
@@ -10,29 +11,37 @@ export class ChatSocketController {
         this.io = io;
         this.setupServer();
     }
+
     setupServer() {
         this.io.on('connection', async (socket) => {
             console.log('a user connected')
-
+            await this.handleNewConnection(socket);
             socket.on('disconnect', () => {
                 console.log('user disconnected')
             });
 
-            // populate socket.data.chat
-            const populateQuery = [
-                {path: 'messages', model: Message},
-                {path: 'users', model: LocalUser},
-            ];
-            const populatedChat = await ChatRoom
-                .findById(socket.data.chatId)
-                .populate<IChatRoomPopulated>(populateQuery)
-                .exec();
-            const messages = populatedChat?.messages;
-            const users = populatedChat?.users;
-
-            socket.emit('connection_success', {messages: messages?.toObject(), users: users?.toObject()});
-
             socket.on('send_message', (message) => this.handleSendMessage(socket, message));
+        });
+    }
+
+    private async handleNewConnection(socket: Socket) {
+        const chatId = socket.data.chatId;
+        // populate socket.data.chat
+        const populateQuery = [
+            {path: 'messages', model: Message},
+            {path: 'users', model: LocalUser},
+        ];
+        const populatedChat = await ChatRoom
+            .findById(chatId)
+            .populate<IChatRoomPopulated>(populateQuery)
+            .exec();
+        const messages = populatedChat?.messages;
+        const users = populatedChat?.users;
+        const inviteLinkHash = (await InviteLink.getOrCreateOne(chatId)).hashBase64url;
+        socket.emit('connection_success', {
+            messages: messages?.toObject(),
+            users: users?.toObject(),
+            inviteHash: inviteLinkHash
         });
     }
 

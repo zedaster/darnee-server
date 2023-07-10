@@ -1,11 +1,6 @@
 import {model, Schema, Types} from "mongoose";
 import * as crypto from "crypto";
-
-const generateSalt = () => {
-    const salt = Buffer.alloc(32)
-    salt.write(crypto.randomBytes(32).toString('hex'))
-    return salt
-}
+import {generateAuthRefreshSalt} from "../utils/salt";
 
 // interface for AuthRefreshToken
 export interface IAuthRefreshToken {
@@ -17,7 +12,7 @@ export interface IAuthRefreshToken {
 const AuthRefreshToken = new Schema({
     localUser: {type: Schema.Types.ObjectId, ref: "LocalUser", required: true, immutable: true},
     chatRoom: {type: Schema.Types.ObjectId, ref: "ChatRoom", required: true, immutable: true},
-    salt: {type: Buffer, required: true, default: generateSalt, immutable: true},
+    salt: {type: Buffer, required: true, default: generateAuthRefreshSalt, immutable: true},
     // expiresAt field in 30 days
     createdAt: {type: Date, required: true, default: Date.now, immutable: true},
 })

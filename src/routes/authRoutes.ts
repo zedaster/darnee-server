@@ -1,6 +1,7 @@
 import express from "express";
 import {HttpController} from "../controllers/HttpController";
 import {check} from "express-validator";
+import {checkInviteLinkHash} from "../middleware/inviteLinkMiddleware";
 
 const router = express()
 const controller = new HttpController()
@@ -28,7 +29,16 @@ router.post('/restoreRooms', [
     check('email').isEmail().withMessage('Email must be a valid email address'),
 ], controller.restoreRooms);
 
-router.post('/joinRoom', chatJoinHandlers, controller.joinRooms);
+router.post('/hasInviteHash', [
+    check('inviteHash').isBase64().withMessage('Invite hash must be a valid base64 string'),
+    checkInviteLinkHash,
+], controller.hasInviteHash);
+
+router.post('/joinRoom', [
+    ...chatJoinHandlers,
+    check('inviteHash').isBase64().withMessage('Invite hash must be a valid base64 string'),
+    checkInviteLinkHash,
+], controller.joinRoom);
 
 // TODO: Update token route
 router.post('/updateToken', [

@@ -1,15 +1,19 @@
-import {model, Schema, Types} from "mongoose";
+import {model, Schema, Types, Document} from "mongoose";
 import {IMessage} from "./Message";
 import {ILocalUser} from "./LocalUser";
 
 // interface for ChatRoom
-export interface IChatRoom {
+interface IChatRoom {
     messages: Types.Array<Types.ObjectId>,
     users: Types.Array<Types.ObjectId>,
     createdAt: Date,
 }
 
-export type IChatRoomPopulated = Omit<IChatRoom, "messages" | "users"> & {
+export interface IChatRoomDocument extends IChatRoom, Document {
+
+}
+
+export type IChatRoomPopulated = Omit<IChatRoomDocument, "messages" | "users"> & {
     messages: Types.Array<IMessage> | null,
     users: Types.Array<ILocalUser> | null,
 }
@@ -19,4 +23,4 @@ const ChatRoom = new Schema({
     users: [{type: Schema.Types.ObjectId, ref: "LocalUser", required: true}],
 }, {timestamps: true})
 
-export default model<IChatRoom>('ChatRoom', ChatRoom)
+export default model<IChatRoomDocument>('ChatRoom', ChatRoom)

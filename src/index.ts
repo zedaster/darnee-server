@@ -10,7 +10,7 @@ import {authorizeChatUsers} from "./middleware/authMiddleware";
 
 dotenv.config();
 
-connectMongoose({removeAll: true}).then(() => {
+connectMongoose({removeAll: false}).then(() => {
     setupServers();
 });
 
