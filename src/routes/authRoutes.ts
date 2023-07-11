@@ -40,7 +40,6 @@ router.post('/joinRoom', [
     checkInviteLinkHash,
 ], controller.joinRoom);
 
-// TODO: Update token route
 router.post('/updateToken', [
     check('refreshToken')
         .notEmpty().withMessage('Refresh token must be not empty')

@@ -7,6 +7,7 @@ import jwt, {JwtPayload} from "jsonwebtoken";
 import AuthRefreshToken from "../models/AuthRefreshToken";
 import AuthorizationService from "../services/AuthorizationService";
 import {InviteLinkRequest} from "../middleware/inviteLinkMiddleware";
+import app from "../app"
 
 export class HttpController {
     async createRoom(request: Request, response: Response) {
@@ -59,6 +60,7 @@ export class HttpController {
             chatRoom.users.push(localUser._id)
             await chatRoom.save()
             const authTokens = await AuthorizationService.createAuthTokens(localUser._id, chatRoom._id);
+            (await app).socketController.emitUserJoinEvent(chatRoom.id, localUser.id, localUser.name);
             response.status(200).json({message: "User joined", data: authTokens});
         } catch (e) {
             console.log(e);

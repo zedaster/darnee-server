@@ -2,7 +2,7 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.ts",
+  "main": "src/app.ts",
   "scripts": {
     "start:dev": "npx nodemon",
     "start": "npm run build && node build/index.js",

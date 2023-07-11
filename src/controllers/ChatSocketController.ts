@@ -3,6 +3,7 @@ import Message, {IMessage, isClientMessage} from "../models/Message";
 import ChatRoom, {IChatRoomPopulated} from "../models/ChatRoom";
 import LocalUser from "../models/LocalUser";
 import InviteLink from "../models/InviteLink";
+import {Types} from "mongoose";
 
 export class ChatSocketController {
     private io: Server;
@@ -24,6 +25,10 @@ export class ChatSocketController {
         });
     }
 
+    emitUserJoinEvent(chatId: Types.ObjectId, localUserId: Types.ObjectId, name: string) {
+        this.io.to(chatId.toString()).emit('user_joined', {_id: localUserId, name: name})
+    }
+
     private async handleNewConnection(socket: Socket) {
         const chatId = socket.data.chatId;
         // populate socket.data.chat
@@ -38,6 +43,7 @@ export class ChatSocketController {
         const messages = populatedChat?.messages;
         const users = populatedChat?.users;
         const inviteLinkHash = (await InviteLink.getOrCreateOne(chatId)).hashBase64url;
+        // TODO: Broadcast new user joined
         socket.emit('connection_success', {
             messages: messages?.toObject(),
             users: users?.toObject(),
