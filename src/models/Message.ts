@@ -13,7 +13,8 @@ export function isClientMessage(message: any): message is IClientMessage {
     try {
         return typeof message === 'object' &&
             typeof message.text === 'string' &&
-            message.text.length > 0
+            message.text.length > 0 &&
+            message.text.length <= 4096
     } catch (e) {
         return false;
     }
