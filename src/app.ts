@@ -7,6 +7,8 @@ import {ChatSocketController} from "./controllers/ChatSocketController";
 import * as http from "http";
 import cors from "cors";
 import {authorizeChatUsers} from "./middleware/authMiddleware";
+import * as https from "https";
+import * as fs from "fs";
 
 dotenv.config();
 
@@ -39,7 +41,12 @@ class App {
         } else {
             console.log('SERVER_PORT not specified, using default 5000');
         }
-        const server = http.createServer(app)
+
+        const options = {
+            key: fs.readFileSync(process.env.CERT_KEY_PATH!),
+            cert: fs.readFileSync(process.env.CERT_PEM_PATH!),
+        }
+        const server = https.createServer(options, app)
 
         const io = new Server(server, {
             path: '/chat/',
