@@ -18,9 +18,12 @@ export type IChatRoomPopulated = Omit<IChatRoomDocument, "messages" | "users"> &
     users: Types.Array<ILocalUser> | null,
 }
 
+const thirtyDays = 2_592_000
+
 const ChatRoom = new Schema({
     messages: [{type: Schema.Types.ObjectId, ref: "Message", default: []}],
     users: [{type: Schema.Types.ObjectId, ref: "LocalUser", required: true}],
+    createdAt: {type: Date, default: Date.now, expires: thirtyDays}
 }, {timestamps: true})
 
 export default model<IChatRoomDocument>('ChatRoom', ChatRoom)

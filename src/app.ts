@@ -4,7 +4,6 @@ import authRoutes from "./routes/authRoutes";
 import mongoose from "mongoose";
 import {Server} from "socket.io";
 import {ChatSocketController} from "./controllers/ChatSocketController";
-import * as http from "http";
 import cors from "cors";
 import {authorizeChatUsers} from "./middleware/authMiddleware";
 import * as https from "https";
