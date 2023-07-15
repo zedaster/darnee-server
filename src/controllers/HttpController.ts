@@ -41,9 +41,13 @@ export class HttpController {
         }
     }
 
-    async hasInviteHash(request: Request, response: Response) {
+    async getInviteChatInfo(request: Request, response: Response) {
         try {
-            response.status(200).json({message: "Invite hash found"});
+            const inviteRequest = request as InviteLinkRequest
+            response.status(200).json({
+                message: "Invite hash found",
+                data: {chatId: inviteRequest.chatRoom.id}
+            });
         } catch (e) {
             console.log(e);
         }

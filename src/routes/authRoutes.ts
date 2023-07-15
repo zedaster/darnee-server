@@ -1,7 +1,7 @@
 import express from "express";
 import {HttpController} from "../controllers/HttpController";
 import {check} from "express-validator";
-import {checkInviteLinkHash} from "../middleware/inviteLinkMiddleware";
+import {handleInviteLinkHash} from "../middleware/inviteLinkMiddleware";
 
 const router = express()
 const controller = new HttpController()
@@ -29,15 +29,15 @@ router.post('/restoreRooms', [
     check('email').isEmail().withMessage('Email must be a valid email address'),
 ], controller.restoreRooms);
 
-router.post('/hasInviteHash', [
+router.get('/inviteChatInfo', [
     check('inviteHash').isBase64().withMessage('Invite hash must be a valid base64 string'),
-    checkInviteLinkHash,
-], controller.hasInviteHash);
+    handleInviteLinkHash('get'),
+], controller.getInviteChatInfo);
 
 router.post('/joinRoom', [
     ...chatJoinHandlers,
     check('inviteHash').isBase64().withMessage('Invite hash must be a valid base64 string'),
-    checkInviteLinkHash,
+    handleInviteLinkHash('post'),
 ], controller.joinRoom);
 
 router.post('/updateToken', [

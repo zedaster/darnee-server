@@ -43,7 +43,6 @@ export class ChatSocketController {
         const messages = populatedChat?.messages;
         const users = populatedChat?.users;
         const inviteLinkHash = (await InviteLink.getOrCreateOne(chatId)).hashBase64url;
-        // TODO: Broadcast new user joined
         socket.emit('connection_success', {
             messages: messages?.toObject(),
             users: users?.toObject(),
