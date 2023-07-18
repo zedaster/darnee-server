@@ -9,7 +9,7 @@ const controller = new HttpController()
 const chatJoinHandlers = [
     check('username')
         .isString().withMessage('Username must be a string')
-        .isLength({min: 1, max: 32}).withMessage('Username must be between 1 and 20 characters')
+        .isLength({min: 1, max: 32}).withMessage('Username must be between 1 and 32 characters')
         .matches(/^[a-zA-Z0-9 ]+$/).withMessage('Username must contain only letters, numbers and spaces')
         // string must not start or end with a space
         .custom((value) => {
@@ -19,7 +19,7 @@ const chatJoinHandlers = [
         .custom((value) => {
             return !value.includes('  ');
         }).withMessage('Username must not contain double spaces'),
-    check('email').optional()
+    check('email').optional({nullable: true, checkFalsy: true})
         .isEmail().withMessage('Email must be a valid email address or not specified'),
 ];
 

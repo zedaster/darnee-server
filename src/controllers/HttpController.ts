@@ -12,13 +12,16 @@ import app from "../app"
 export class HttpController {
     async createRoom(request: Request, response: Response) {
         try {
-            const {username, email} = request.body
             // TODO: Work with email and global user later
             const errors = validationResult(request);
             if (!errors.isEmpty()) {
-                return response.status(400).json({message: "Create room response errors", errors: errors.array()});
+                return response.status(400).json({
+                    message: "Create room response error",
+                    error_msg: errors.array()[0].msg
+                });
             }
 
+            const {username, email} = request.body
             const localUser = new LocalUser({name: username})
             await localUser.save()
             const chatRoom = new ChatRoom({users: [localUser._id]})
@@ -43,6 +46,14 @@ export class HttpController {
 
     async getInviteChatInfo(request: Request, response: Response) {
         try {
+            const errors = validationResult(request);
+            if (!errors.isEmpty()) {
+                return response.status(400).json({
+                    message: "Create room response error",
+                    error_msg: errors.array()[0].msg
+                });
+            }
+
             const inviteRequest = request as InviteLinkRequest
             response.status(200).json({
                 message: "Invite hash found",
@@ -55,6 +66,14 @@ export class HttpController {
 
     async joinRoom(request: Request, response: Response) {
         try {
+            const errors = validationResult(request);
+            if (!errors.isEmpty()) {
+                return response.status(400).json({
+                    message: "Create room response error",
+                    error_msg: errors.array()[0].msg
+                });
+            }
+
             const {username, email} = request.body
             const inviteRequest = request as InviteLinkRequest;
             const {chatRoom} = inviteRequest;
@@ -75,12 +94,15 @@ export class HttpController {
 
     async updateToken(request: Request, response: Response) {
         try {
-            const {refreshToken} = request.body;
             const errors = validationResult(request);
             if (!errors.isEmpty()) {
-                return response.status(400).json({message: "Update token response errors", errors: errors.array()});
+                return response.status(400).json({
+                    message: "Update token response error",
+                    error_msg: errors.array()[0].msg
+                });
             }
 
+            const {refreshToken} = request.body;
             const payload = jwt.decode(refreshToken) as JwtPayload;
             const refreshTokenModel = await AuthRefreshToken.findById(payload.id);
             if (!refreshTokenModel) {

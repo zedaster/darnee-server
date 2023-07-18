@@ -13,15 +13,19 @@ dotenv.config();
 
 class App {
     public readonly socketController: ChatSocketController;
+    public readonly expressApp: Express
 
     public static async initialize() {
-        await App.connectMongoose({removeAll: false})
+        if (process.env.NODE_ENV !== 'test') {
+            await App.connectMongoose({removeAll: false})
+        }
         return new App();
     }
 
     private constructor() {
-        const {socketController} = this.setupServers();
+        const {socketController, expressApp} = this.setupServers();
         this.socketController = socketController;
+        this.expressApp = expressApp;
     }
 
     private setupServers() {
@@ -60,7 +64,7 @@ class App {
         server.listen(port, () => {
             console.log(`Server listening on port ${port}`);
         });
-        return {socketController};
+        return {socketController, expressApp: app};
     }
 
     private static async connectMongoose(params: { removeAll: boolean }) {

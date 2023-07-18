@@ -14,3 +14,6 @@ yarn-error.log*
 
 # folder with ssl sertificates
 security
+
+# tests
+coverage
